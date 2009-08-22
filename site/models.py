@@ -13,6 +13,8 @@ class Script(db.Model):
     updated = db.DateTimeProperty(auto_now=True)
     user = db.UserProperty(auto_current_user_add=True)
     
+    """
     def __init__(self, *args, **kwargs):
         kwargs['name'] = kwargs.get('name', baseN(abs(hash(time.time())), 36))
         super(Script, self).__init__(*args, **kwargs)
+    """

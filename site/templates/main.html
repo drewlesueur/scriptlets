@@ -4,39 +4,50 @@
   form iframe { border: 1px solid black !important; }
   textarea { width: 100%; height: 300px; margin-bottom: 10px; margin-top: 5px;}
 </style>
-<form method="post">
-  Language: <select id="language" name="language" onchange="editors[this.value]['frame'].show(); hideEditors();"><option>javascript</option><option>ruby</option><option>php</option><option>python</option></select>
-<textarea id="ruby-code" name="ruby-code" onchange="editors['ruby'].setCode(this.value)"># Ruby powered by JRuby
+<form method="post" action = "/">
+  Language: 
+<select id="language" name="language" onchange="editors[this.value]['frame'].show(); hideEditors();">
+  <option {% ifequal language 'javascript'%}selected="selected"{% endifequal %}>javascript</option>
+  <option {% ifequal language 'ruby'%}selected="selected"{% endifequal %}>ruby</option>
+  <option {% ifequal language 'php'%}selected="selected"{% endifequal %}>php</option>
+  <option {% ifequal language 'python'%}selected="selected"{% endifequal %}>python</option>
+</select>
+  Scriptlet Name: <input id = "name" name = "name" value = {{name}}>
+<textarea id="ruby-code" name="ruby-code" onchange="editors['ruby'].setCode(this.value)">{% ifequal language 'ruby' %}{{code}}{% else %}# Ruby powered by JRuby
 #
 # Like a typical Rack environment with req and resp objects.
 # Make HTTP requests with: RestClient.new.request(url, headers, post_params) -> Response object
 #
 # Example (try uncommenting):
 # resp.write "Hello! Your name: #{req.params['name']} <hr />" + RestClient.new.get('http://example.com')
+{% endifequal %}
 </textarea>
-<textarea id="php-code" name="php-code" onchange="editors['php'].setCode(this.value)">// PHP 5.2 powered by Quercus
+<textarea id="php-code" name="php-code" onchange="editors['php'].setCode(this.value)">{% ifequal language 'php' %}{{code}}{% else %}// PHP 5.2 powered by Quercus
 //
 // Like a typical PHP environment. $_GET, $_POST, echo ... everything you need.
 // Make HTTP requests with: fetch($url, $post_params) -> Array(code, body)
 //
 // Example (try uncommenting):
-// echo "Hello! Your name: {$_GET['name']} <hr />".fetch('http://example.com')[1];
+// echo "Hello! Your name: {$_GET['name']} <hr />".fetch('http://example.com')[1];{% endifequal %}
 </textarea>
-<textarea id="python-code" name="python-code" onchange="editors['python'].setCode(this.value)"># Python 2.5 powered by Jython
+<textarea id="python-code" name="python-code" onchange="editors['python'].setCode(this.value)">{% ifequal language 'python' %}{{code}}{% else %}# Python 2.5 powered by Jython
 #
 # A WSGI environ with WebOb req and resp objects.
 # Make HTTP requests with: RestClient().request(url, headers, post_params) -> Response
 #
 # Example (try uncommenting):
 # resp.write("Hello! Your name: %s <hr />%s" % (req.GET.get('name'), RestClient().get('http://example.com')))
+# acually use resp.out.write, we are still not using jython.
+{% endifequal %}
 </textarea>
-<textarea id="javascript-code" name="javascript-code" onchange="editors['javascript'].setCode(this.value)">// JavaScript powered by Rhino
+<textarea id="javascript-code" name="javascript-code" onchange="editors['javascript'].setCode(this.value)">{% ifequal language 'javascript' %}{{code}}{% else %}// JavaScript powered by Rhino
 //
 // Jack (http://tinyurl.com/adqv8w) app environment with req and resp objects.
 // Make HTTP requests with: fetch(url, post_params) -> [code, body]
 //
 // Example (try uncommenting):
 // resp.write("Hello! Your name: "+req.GET('name')+"<hr />"+fetch('http://example.com')[1]);
+{% endifequal %}
 </textarea>
 <a href="javascript:void(0)" onclick="hideEditors(true); $($F('language')+'-code').show();" style="float: right; font-size: smaller; margin-top: -8px; color: grey;">Use regular textarea</a>
 <input type="submit" value="Save Scriptlet" /> to get a URL that will run this code.
@@ -69,5 +80,35 @@ function hideEditors(all) {
 $H(editors).each(function(kv){if($F('language')!=kv[0]||all){kv[1]['frame'].hide()};$(kv[0]+'-code').hide();})
 }
 hideEditors();
+
+//drew
+/*
+    I would have used jQuery here instead
+
+*/
+function selectLanguage() {
+    var language = '{{language}}';
+    if (language) {
+        lang = document.getElementById('language');
+        for (optionid = 0; optionid < lang.length;lang++) {
+            if (lang[optionid].innerHTML == language) {
+                lang[optionid].selected = true;
+            }
+        }
+    }
+}
+
+
+
+
+
 </script>
+<ul>
+{% for script in scripts %}
+<li><a href = "/edit/{{script.name}}">{{script.name}}</a></li>
+{% endfor %}
+</ul>
+
 {% endblock %}
+
+

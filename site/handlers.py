@@ -7,9 +7,11 @@ from google.appengine.api import urlfetch
 from models import Script
 import base64
 import urllib
+from main import MainHandler
+
 
 language_engines = {
-    'ruby': 'http://scriptlets-engine.appspot.com/ruby/',
+    'ruby': 'http://scriptlets2.appspot.com/ruby/',
     'php': 'http://scriptlets-engine.appspot.com/run.php',
     'javascript': 'http://scriptlets-engine.appspot.com/javascript/',
     'python': 'http://scriptlets-python.appspot.com/python/',
@@ -43,6 +45,23 @@ class CodeHandler(webapp.RequestHandler):
         self.response.out.write("#!%s\n" % script.language)
         self.response.out.write(script.code)
 
+
+class EditHandler(MainHandler):
+     def get(self):
+        if self.request.path[-1] == '/':
+            self.redirect(self.request.path[:-1])
+        name = self.request.path.split('/')[-1]
+        script = Script.all().filter('name =', name).get()
+        user = users.get_current_user()
+        
+        if not script or (not user or user != script.user):
+            self.redirect(users.create_login_url("/"))
+        
+        
+        self._get_main(script.name, script.language, script.code)
+        
+        
+
 class RunHandler(webapp.RequestHandler):
     def get(self):
         if self.request.path[-1] == '/':
@@ -75,4 +94,5 @@ if __name__ == '__main__':
     wsgiref.handlers.CGIHandler().run(webapp.WSGIApplication([
     ('/view/.*', ViewHandler),
     ('/code/.*', CodeHandler),
+    ('/edit/.*', EditHandler),
     ('/run/.*', RunHandler)], debug=True))
